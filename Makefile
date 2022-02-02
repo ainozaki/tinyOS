@@ -1,10 +1,12 @@
 SRC = main.c \
 			efi.c \
 			graphics.c \
+			gui.c \
 			shell.c \
 			string.c
 HEADER = efi.h \
 					graphics.h \
+					gui.h \
 					shell.h \
 					string.h
 TARGET = fs/EFI/BOOT/BOOTX64.EFI
