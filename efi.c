@@ -4,7 +4,15 @@ struct EFI_SYSTEM_TABLE *ST;
 
 void efi_init(struct EFI_SYSTEM_TABLE *SystemTable) { ST = SystemTable; }
 
-void put(unsigned short *str) { ST->ConOut->OutputString(ST->ConOut, str); }
+void putc(unsigned short c) {
+	unsigned short str[2] = L"";
+	str[0] = c;
+	ST->ConOut->OutputString(ST->ConOut, str); 
+}
+
+void put(unsigned short *str){
+	ST->ConOut->OutputString(ST->ConOut, str); 
+}
 
 unsigned short wait_and_get() {
   struct EFI_INPUT_KEY key;
@@ -19,14 +27,13 @@ unsigned short wait_and_get() {
 void wait_and_get_line(unsigned short *str, unsigned int max) {
   unsigned int i = 0;
   while (i < max) {
-    unsigned short key = wait_and_get();
-    if (key != L'\r') {
-      str[i++] = key;
-      put(&key);
-    } else {
-      str[i] = L'\0';
-      put(L"\r\n");
-      break;
+    str[i] = wait_and_get();
+		putc(str[i]);
+    if (str[i] == L'\r') {
+      putc('\n');
+			break;
     }
-  }
+		i++;
+	}
+	str[i] = '\0';
 }

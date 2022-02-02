@@ -42,6 +42,7 @@ struct EFI_SYSTEM_TABLE {
 
 void efi_init(struct EFI_SYSTEM_TABLE *SystemTable);
 
+void putc(unsigned short c);
 void put(unsigned short *str);
 
 void wait_and_get_line(unsigned short *str, unsigned int max);
