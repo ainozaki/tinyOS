@@ -1,5 +1,6 @@
 SRC = main.c \
 			efi.c \
+			file.c \
 			graphics.c \
 			gui.c \
 			shell.c \

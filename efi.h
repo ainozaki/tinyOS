@@ -64,6 +64,46 @@ struct EFI_SIMPLE_POINTER_PROTOCOL {
     void *WaitForInput;
 };
 
+// for file
+struct EFI_FILE_PROTOCOL {
+    unsigned long long _buf;
+
+    unsigned long long (*Open)(struct EFI_FILE_PROTOCOL *This,
+                               struct EFI_FILE_PROTOCOL **NewHandle,
+                               unsigned short *FileName,
+                               unsigned long long OpenMode,
+                               unsigned long long Attributes);
+
+    unsigned long long (*Close)(struct EFI_FILE_PROTOCOL *This);
+
+    unsigned long long _buf2;
+
+    unsigned long long (*Read)(struct EFI_FILE_PROTOCOL *This,
+                               unsigned long long *BufferSize,
+                               void *Buffer);
+
+    unsigned long long (*Write)(struct EFI_FILE_PROTOCOL *This,
+                                unsigned long long *BufferSize,
+                                void *Buffer);
+
+    unsigned long long _buf3[4];
+
+    unsigned long long (*Flush)(struct EFI_FILE_PROTOCOL *This);
+};
+
+struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
+    unsigned long long Revision;
+
+    unsigned long long (*OpenVolume)(
+            struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This,
+            struct EFI_FILE_PROTOCOL **Root);
+};
+
+struct EFI_FILE_INFO {
+    unsigned char _buf[80];
+    unsigned short FileName[];
+};
+
 // SystemTable is an argument of the UEFI's entry function.
 struct EFI_SYSTEM_TABLE {
     char _buf1[44];
@@ -147,6 +187,7 @@ struct EFI_SYSTEM_TABLE {
 extern struct EFI_SYSTEM_TABLE *ST;
 extern struct EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 extern struct EFI_SIMPLE_POINTER_PROTOCOL *SPP;
+extern struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SFSP;
 
 void efi_init(struct EFI_SYSTEM_TABLE *SystemTable);
 

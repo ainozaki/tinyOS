@@ -2,13 +2,14 @@
 
 #include "common.h"
 #include "efi.h"
+#include "file.h"
 #include "graphics.h"
 #include "gui.h"
 #include "string.h"
 
 #define MAX_CMDLINE 32
 
-void pstat(void){
+void pstat(void) {
     unsigned long long status;
     struct EFI_SIMPLE_POINTER_STATE s;
     unsigned long long waitidx;
@@ -17,7 +18,7 @@ void pstat(void){
     while (1) {
         ST->BootServices->WaitForEvent(1, &(SPP->WaitForInput), &waitidx);
         status = SPP->GetState(SPP, &s);
-        if (!status){
+        if (!status) {
             puth(s.RelativeMovementX, 8);
             put(L" ");
             puth(s.RelativeMovementY, 8);
@@ -32,21 +33,55 @@ void pstat(void){
     }
 }
 
-void shell(void) {
-  unsigned short cmdline[MAX_CMDLINE];
+int ls(void) {
+    unsigned long long status;
+    struct EFI_FILE_PROTOCOL *root;
+    unsigned long long buf_size;
+    unsigned char file_buf[MAX_FILE_BUF];
+    struct EFI_FILE_INFO *file_info;
+    int idx = 0;
+    int file_num;
 
-  while (1) {
-    put(L"inos> ");
+    status = SFSP->OpenVolume(SFSP, &root);
 
-    wait_and_get_line(cmdline, MAX_CMDLINE);
-    if (strncmp(cmdline, L"hello", 6) == 0) {
-      put(L"hello\r\n");
-    } else if (strncmp(cmdline, L"gui", 4) == 0) {
-      gui();
-    } else if (strncmp(cmdline, L"pstat", 6) == 0){
-        pstat();
-    }else {
-      put(L"command not found.\r\n");
+    while (1) {
+        buf_size = MAX_FILE_BUF;
+        status = root->Read(root, &buf_size, (void *) file_buf);
+        // buf_size = 0 when all the files and directories have been read.
+        if (!buf_size) {
+            break;
+        }
+        file_info = (struct EFI_FILE_INFO *) file_buf;
+        strncpy(file_list[idx].name, file_info->FileName, MAX_FILE_NAME_LEN - 1);
+        file_list[idx].name[MAX_FILE_NAME_LEN - 1] = L'\0';
+        put(file_list[idx].name);
+        put(L" ");
+        idx++;
     }
-  }
+    put(L"\r\n");
+    file_num = idx;
+
+    root->Close(root);
+    return file_num;
+}
+
+void shell(void) {
+    unsigned short cmdline[MAX_CMDLINE];
+
+    while (1) {
+        put(L"inos> ");
+
+        wait_and_get_line(cmdline, MAX_CMDLINE);
+        if (strncmp(cmdline, L"hello", 6) == 0) {
+            put(L"hello\r\n");
+        } else if (strncmp(cmdline, L"gui", 4) == 0) {
+            gui();
+        } else if (strncmp(cmdline, L"pstat", 6) == 0) {
+            pstat();
+        } else if (strncmp(cmdline, L"ls", 3) == 0) {
+            ls();
+        } else {
+            put(L"command not found.\r\n");
+        }
+    }
 }
