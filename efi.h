@@ -1,16 +1,27 @@
 #ifndef EFI_H_
 #define EFI_H_
 
+// used in EFI_SIMPLE_TEXT_INPUT_PROTOCOL.ReadKeyStroke
 struct EFI_INPUT_KEY {
   unsigned short ScanCode;
   unsigned short UnicodeChar;
 };
 
+// Pixel format.
+// use EFI_GRAPHICS_PIXEL_FORMAT.PixelBlueGreenRedReserved8BitPerColor format for QEMU OVMF.
 struct EFI_GRAPHICS_OUTPUT_BLT_PIXEL {
   unsigned char Blue;
   unsigned char Green;
   unsigned char Red;
   unsigned char Reserved;
+};
+
+// used in SystemTable.BootServices.LocateProtocol
+struct EFI_GUID {
+    unsigned int Data1;
+    unsigned short Data2;
+    unsigned short Data3;
+    unsigned char Data4[8];
 };
 
 struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
@@ -33,13 +44,6 @@ struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
     unsigned long long SizeOfInfo;
     unsigned long long FrameBufferBase;
   } * Mode;
-};
-
-struct EFI_GUID {
-  unsigned int Data1;
-  unsigned short Data2;
-  unsigned short Data3;
-  unsigned char Data4[8];
 };
 
 struct EFI_SYSTEM_TABLE {

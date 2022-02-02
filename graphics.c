@@ -6,6 +6,7 @@ const struct EFI_GRAPHICS_OUTPUT_BLT_PIXEL white = {0xff, 0xff, 0xff, 0xff};
 
 void draw_pixel(unsigned int x, unsigned int y,
                 struct EFI_GRAPHICS_OUTPUT_BLT_PIXEL color) {
+    // GOP has set in efi_init()
     unsigned int hr = GOP->Mode->Info->HorizontalResolution;
     struct EFI_GRAPHICS_OUTPUT_BLT_PIXEL *base =
             (struct EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) GOP->Mode->FrameBufferBase;
