@@ -46,6 +46,7 @@ int ls(void) {
 
     while (1) {
         buf_size = MAX_FILE_BUF;
+        // Read() to directory's EFI_FILE_PROTOCOL will get file list
         status = root->Read(root, &buf_size, (void *) file_buf);
         // buf_size = 0 when all the files and directories have been read.
         if (!buf_size) {
@@ -65,6 +66,27 @@ int ls(void) {
     return file_num;
 }
 
+void cat(unsigned short *file_name) {
+    unsigned long long status;
+    struct EFI_FILE_PROTOCOL *root;
+    struct EFI_FILE_PROTOCOL *file;
+    unsigned long long buf_size = MAX_FILE_BUF;
+    unsigned short file_buf[MAX_FILE_BUF / 2];
+
+    // Get root dir's EFI_FILE_PROTOCOL
+    status = SFSP->OpenVolume(SFSP, &root);
+
+    // Get file's EFI_FILE_PROTOCOL
+    status = root->Open(root, &file, file_name, EFI_FILE_MODE_READ, /*Attributes=*/0);
+
+    status = file->Read(file, &buf_size, (void *) file_buf);
+
+    put(file_buf);
+
+    file->Close(file);
+    root->Close(root);
+}
+
 void shell(void) {
     unsigned short cmdline[MAX_CMDLINE];
 
@@ -80,6 +102,8 @@ void shell(void) {
             pstat();
         } else if (strncmp(cmdline, L"ls", 3) == 0) {
             ls();
+        } else if (strncmp(cmdline, L"cat", 4) == 0) {
+            cat(L"a.txt");
         } else {
             put(L"command not found.\r\n");
         }
