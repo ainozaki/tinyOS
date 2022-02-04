@@ -76,11 +76,14 @@ void cat(unsigned short *file_name) {
 
     // Get root dir's EFI_FILE_PROTOCOL
     status = SFSP->OpenVolume(SFSP, &root);
+    assert(status, L"OpenVolume");
 
     // Get file's EFI_FILE_PROTOCOL
     status = root->Open(root, &file, file_name, EFI_FILE_MODE_READ, /*Attributes=*/0);
+    assert(status, L"Open");
 
     status = file->Read(file, &buf_size, (void *) file_buf);
+    assert(status, L"Read");
 
     put(file_buf);
 

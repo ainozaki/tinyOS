@@ -14,10 +14,13 @@ HEADER = efi.h \
 TARGET = fs/EFI/BOOT/BOOTX64.EFI
 
 all: $(TARGET)
+app: fs/test.efi
 
 $(TARGET): $(SRC) $(HEADER)
 	x86_64-w64-mingw32-gcc -Wall -Wextra -e efi_main -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10 -o $@ $(SRC)
 
+fs/test.efi: $(SRC) $(HEADER)
+	x86_64-w64-mingw32-gcc -Wall -Wextra -e efi_main -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10 -shared -o $@ $(SRC)
 run:
 	qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -hda fat:rw:fs
 

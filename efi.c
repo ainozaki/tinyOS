@@ -14,6 +14,10 @@ struct EFI_GUID lip_guid = {0x5b1b31a1,
                             0x11d2,
                             {0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}};
 
+struct EFI_GUID dpp_guid = {0x09576e91, 0x6d3f, 0x11d2,
+                            {0x8e, 0x39, 0x00, 0xa0,
+                             0xc9, 0x69, 0x72, 0x3b}};
+
 void efi_init(struct EFI_SYSTEM_TABLE *SystemTable) {
     ST = SystemTable;
 
@@ -46,7 +50,7 @@ void efi_init(struct EFI_SYSTEM_TABLE *SystemTable) {
             {0x8a, 0x5f, 0x35, 0xdf, 0x33, 0x43, 0xf5, 0x1e}};
     // Watch Dog Timer. Default timer is 5 min.
     ST->BootServices->SetWatchdogTimer(/*Timeout=*/0, /*WatchDogCode=*/0,
-                                       /*DataSize=*/0, /*WatchDogData*/ NULL);
+            /*DataSize=*/0, /*WatchDogData*/ NULL);
 
     ST->BootServices->LocateProtocol(&gop_guid, NULL, (void **) &GOP);
     ST->BootServices->LocateProtocol(&spp_guid, NULL, (void **) &SPP);
@@ -87,7 +91,7 @@ unsigned short wait_and_get() {
     unsigned long long waitidx;
     while (1) {
         ST->BootServices->WaitForEvent(/*NumberOfEvents=*/1,
-                                       &(ST->ConIn->WaitForKey), &waitidx);
+                                                          &(ST->ConIn->WaitForKey), &waitidx);
         // ReadKeyStroke is non-blocking.
         ST->ConIn->ReadKeyStroke(ST->ConIn, &key);
         return key.UnicodeChar;
