@@ -42,10 +42,10 @@ struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
                 PixelBltOnly,
                 PixelFormatMax
             } PixelFormat;
-        } *Info;
+        } * Info;
         unsigned long long SizeOfInfo;
         unsigned long long FrameBufferBase;
-    } *Mode;
+    } * Mode;
 };
 
 // for mouse
@@ -171,6 +171,14 @@ struct EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL {
             const unsigned short *TextDevicePath);
 };
 
+struct EFI_DEVICE_PATH_UTILITIES_PROTOCOL {
+    unsigned long long _buf[3];
+
+    struct EFI_DEVICE_PATH_PROTOCOL *(*AppendDeviceNode)(
+            const struct EFI_DEVICE_PATH_PROTOCOL *DevicePath,
+            const struct EFI_DEVICE_PATH_PROTOCOL *DeviceNode);
+};
+
 // SystemTable is an argument of the UEFI's entry function.
 struct EFI_SYSTEM_TABLE {
     char _buf1[44];
@@ -182,7 +190,7 @@ struct EFI_SYSTEM_TABLE {
                 struct EFI_SIMPLE_TEXT_INPUT_PROTOCOL *This, struct EFI_INPUT_KEY *Key);
 
         void *WaitForKey;
-    } *ConIn;
+    } * ConIn;
 
     unsigned long long _buf2;
 
@@ -196,7 +204,7 @@ struct EFI_SYSTEM_TABLE {
 
         unsigned long long (*ClearScreen)(
                 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This);
-    } *ConOut;
+    } * ConOut;
 
     unsigned long long _buf[3];
 
@@ -218,9 +226,8 @@ struct EFI_SYSTEM_TABLE {
         unsigned long long _buf5[9];
 
         // Image
-        unsigned long long
-        (*LoadImage)(unsigned char BootPolicy, void *ParentImageHandle, struct EFI_DEVICE_PATH_PROTOCOL *DevicePath,
-                     void *SourceBuffer, unsigned long long SourceSize, void **ImageHandle);
+        unsigned long long (*LoadImage)(unsigned char BootPolicy, void *ParentImageHandle, struct EFI_DEVICE_PATH_PROTOCOL *DevicePath,
+                                        void *SourceBuffer, unsigned long long SourceSize, void **ImageHandle);
 
         unsigned long long _buf6[4];
 
@@ -257,7 +264,7 @@ struct EFI_SYSTEM_TABLE {
         // Miscellaneous
         unsigned long long _buf12[3];
 
-    } *BootServices;
+    } * BootServices;
 };
 
 extern struct EFI_SYSTEM_TABLE *ST;
@@ -266,6 +273,7 @@ extern struct EFI_SIMPLE_POINTER_PROTOCOL *SPP;
 extern struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SFSP;
 extern struct EFI_DEVICE_PATH_TO_TEXT_PROTOCOL *DPTTP;
 extern struct EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL *DPFTP;
+extern struct EFI_DEVICE_PATH_UTILITIES_PROTOCOL *DPUP;
 
 extern struct EFI_GUID lip_guid;
 extern struct EFI_GUID dpp_guid;

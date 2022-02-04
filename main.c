@@ -7,6 +7,8 @@ void efi_main(void *ImageHandle __attribute__((unused)),
     unsigned long long status;
     struct EFI_LOADED_IMAGE_PROTOCOL *lip;
     struct EFI_DEVICE_PATH_PROTOCOL *dev_path;
+    struct EFI_DEVICE_PATH_PROTOCOL *dev_node;
+    struct EFI_DEVICE_PATH_PROTOCOL *dev_path_merged;
     void *image;
 
     SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
@@ -19,7 +21,7 @@ void efi_main(void *ImageHandle __attribute__((unused)),
     assert(status, L"OpenProtocol(lip)");
     put(L"lip->FilePath: ");
     put(DPTTP->ConvertDevicePathToText(lip->FilePath, /*DisplayOnly=*/FALSE,
-            /*AllowShortcuts=*/FALSE));
+                                       /*AllowShortcuts=*/FALSE));
     put(L"\r\n");
 
     // Get lip->DeviceHandle's EFI_DEVICE_PATH_PROTOCOL
@@ -29,12 +31,23 @@ void efi_main(void *ImageHandle __attribute__((unused)),
     assert(status, L"OpenProtocol(dpp)");
     put(L"dev_path: ");
     put(DPTTP->ConvertDevicePathToText(dev_path, /*DisplayOnly=*/FALSE,
-            /*AllowShortcut=*/FALSE));
+                                       /*AllowShortcut=*/FALSE));
     put(L"\r\n");
 
-    status = ST->BootServices->LoadImage(/*BootPolicy=*/FALSE, ImageHandle, dev_path, /*SourceBuffer=*/
-                                                        NULL, /*SourceSize=*/0, &image);
+    // Create test.efi's device node.
+    dev_node = DPFTP->ConvertTextToDevicePath(L"test.efi");
+
+    // Concatinate dev_path and dev_node
+    dev_path_merged = DPUP->AppendDeviceNode(dev_path, dev_node);
+    put(L"dev_path_merged: ");
+    put(DPTTP->ConvertDevicePathToText(dev_path_merged, /*DisplayOnle=*/FALSE, /*AllowShortcut=*/FALSE));
+    put(L"\r\n");
+
+    // Load image
+    status = ST->BootServices->LoadImage(/*BootPolicy=*/FALSE, ImageHandle, dev_path_merged, /*SourceBuffer=*/
+                                         NULL, /*SourceSize=*/0, &image);
     assert(status, L"LoadImage");
+
     put(L"LoadImage: Success\r\n");
     shell();
 }
