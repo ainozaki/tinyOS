@@ -7,6 +7,7 @@ void efi_main(void *ImageHandle __attribute__((unused)),
     unsigned long long status;
     struct EFI_LOADED_IMAGE_PROTOCOL *lip;
     struct EFI_DEVICE_PATH_PROTOCOL *dev_path;
+    void *image;
 
     SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
     efi_init(SystemTable);
@@ -27,5 +28,9 @@ void efi_main(void *ImageHandle __attribute__((unused)),
                                        /*AllowShortcut=*/FALSE));
     put(L"\r\n");
 
+    status = ST->BootServices->LoadImage(/*BootPolicy=*/FALSE, ImageHandle, dev_path, /*SourceBuffer=*/
+                                         NULL, /*SourceSize=*/0, &image);
+    assert(status, L"LoadImage");
+    put(L"LoadImage: Success\r\n");
     shell();
 }
