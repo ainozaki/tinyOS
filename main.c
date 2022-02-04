@@ -47,7 +47,12 @@ void efi_main(void *ImageHandle __attribute__((unused)),
     status = ST->BootServices->LoadImage(/*BootPolicy=*/FALSE, ImageHandle, dev_path_merged, /*SourceBuffer=*/
                                          NULL, /*SourceSize=*/0, &image);
     assert(status, L"LoadImage");
-
     put(L"LoadImage: Success\r\n");
+
+    // Start imgae
+    status = ST->BootServices->StartImage(image, /*ExitDataSize=*/NULL, /*ExitData=*/NULL);
+    assert(status, L"StartImage");
+    put(L"StartImage: Success\r\n");
+
     shell();
 }

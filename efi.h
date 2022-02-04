@@ -229,7 +229,9 @@ struct EFI_SYSTEM_TABLE {
         unsigned long long (*LoadImage)(unsigned char BootPolicy, void *ParentImageHandle, struct EFI_DEVICE_PATH_PROTOCOL *DevicePath,
                                         void *SourceBuffer, unsigned long long SourceSize, void **ImageHandle);
 
-        unsigned long long _buf6[4];
+        unsigned long long (*StartImage)(void *ImageHandle, unsigned long long *ExitDataSize, unsigned short **ExitData);
+
+        unsigned long long _buf6[3];
 
         // Miscellaneous
         unsigned long long _buf7[2];
