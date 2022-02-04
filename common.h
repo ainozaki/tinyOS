@@ -5,4 +5,6 @@
 #define TRUE 1
 #define FALSE 0
 
+void assert(unsigned long long status, unsigned short *message);
+
 #endif // COMMON_H_

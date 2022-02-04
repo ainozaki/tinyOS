@@ -47,6 +47,7 @@ int ls(void) {
     while (1) {
         buf_size = MAX_FILE_BUF;
         status = root->Read(root, &buf_size, (void *) file_buf);
+        assert(status, L"root->Read");
         // buf_size = 0 when all the files and directories have been read.
         if (!buf_size) {
             break;

@@ -1,4 +1,5 @@
 SRC = main.c \
+			common.c \
 			efi.c \
 			file.c \
 			graphics.c \

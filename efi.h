@@ -8,7 +8,8 @@ struct EFI_INPUT_KEY {
 };
 
 // Pixel format.
-// use EFI_GRAPHICS_PIXEL_FORMAT.PixelBlueGreenRedReserved8BitPerColor format for QEMU OVMF.
+// use EFI_GRAPHICS_PIXEL_FORMAT.PixelBlueGreenRedReserved8BitPerColor format
+// for QEMU OVMF.
 struct EFI_GRAPHICS_OUTPUT_BLT_PIXEL {
     unsigned char Blue;
     unsigned char Green;
@@ -41,10 +42,10 @@ struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
                 PixelBltOnly,
                 PixelFormatMax
             } PixelFormat;
-        } *Info;
+        } * Info;
         unsigned long long SizeOfInfo;
         unsigned long long FrameBufferBase;
-    } *Mode;
+    } * Mode;
 };
 
 // for mouse
@@ -57,9 +58,11 @@ struct EFI_SIMPLE_POINTER_STATE {
 };
 
 struct EFI_SIMPLE_POINTER_PROTOCOL {
-    unsigned long long (*Reset)(struct EFI_SIMPLE_POINTER_PROTOCOL *This, unsigned char ExtendedVerification);
+    unsigned long long (*Reset)(struct EFI_SIMPLE_POINTER_PROTOCOL *This,
+                                unsigned char ExtendedVerification);
 
-    unsigned long long (*GetState)(struct EFI_SIMPLE_POINTER_PROTOCOL *This, struct EFI_SIMPLE_POINTER_STATE *State);
+    unsigned long long (*GetState)(struct EFI_SIMPLE_POINTER_PROTOCOL *This,
+                                   struct EFI_SIMPLE_POINTER_STATE *State);
 
     void *WaitForInput;
 };
@@ -79,12 +82,10 @@ struct EFI_FILE_PROTOCOL {
     unsigned long long _buf2;
 
     unsigned long long (*Read)(struct EFI_FILE_PROTOCOL *This,
-                               unsigned long long *BufferSize,
-                               void *Buffer);
+                               unsigned long long *BufferSize, void *Buffer);
 
     unsigned long long (*Write)(struct EFI_FILE_PROTOCOL *This,
-                                unsigned long long *BufferSize,
-                                void *Buffer);
+                                unsigned long long *BufferSize, void *Buffer);
 
     unsigned long long _buf3[4];
 
@@ -94,14 +95,80 @@ struct EFI_FILE_PROTOCOL {
 struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
     unsigned long long Revision;
 
-    unsigned long long (*OpenVolume)(
-            struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This,
-            struct EFI_FILE_PROTOCOL **Root);
+    unsigned long long (*OpenVolume)(struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This,
+                                     struct EFI_FILE_PROTOCOL **Root);
 };
 
 struct EFI_FILE_INFO {
     unsigned char _buf[80];
     unsigned short FileName[];
+};
+
+// for device path
+
+// The 4th argument of OpenProtocol(): Attributes
+#define EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL 0x00000001
+#define EFI_OPEN_PROTOCOL_GET_PROTOCOL 0x00000002
+#define EFI_OPEN_PROTOCOL_TEST_PROTOCOL 0x00000004
+#define EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER 0x00000008
+#define EFI_OPEN_PROTOCOL_BY_DRIVER 0x00000010
+#define EFI_OPEN_PROTOCOL_EXCLUSIVE 0x00000020
+struct EFI_DEVICE_PATH_PROTOCOL {
+    unsigned char Type;
+    unsigned char SubType;
+    unsigned char Length[2];
+};
+
+enum EFI_MEMORY_TYPE {
+    EfiReservedMemoryType,
+    EfiLoaderCode,
+    EfiLoaderData,
+    EfiBootServicesCode,
+    EfiBootServicesData,
+    EfiRuntimeServicesCode,
+    EfiRuntimeServicesData,
+    EfiConventionalMemory,
+    EfiUnusableMemory,
+    EfiACPIReclaimMemory,
+    EfiACPIMemoryNVS,
+    EfiMemoryMappedIO,
+    EfiMemoryMappedIOPortSpace,
+    EfiPalCode,
+    EfiMaxMemoryType
+};
+
+struct EFI_LOADED_IMAGE_PROTOCOL {
+    unsigned int Revision;
+    void *ParentHandle;
+    struct EFI_SYSTEM_TABLE *SystemTable;
+    void *DeviceHandle;
+    struct EFI_DEVICE_PATH_PROTOCOL *FilePath;
+    void *Reserved;
+    unsigned int LoadOptionsSize;
+    void *LoadOptions;
+    void *ImageBase;
+    unsigned long long ImageSize;
+    enum EFI_MEMORY_TYPE ImageCodeType;
+    enum EFI_MEMORY_TYPE ImageDataType;
+
+    unsigned long long (*Unload)(void *ImageHandle);
+};
+
+// Convert device path to text
+struct EFI_DEVICE_PATH_TO_TEXT_PROTOCOL {
+    unsigned long long _buf;
+
+    unsigned short *(*ConvertDevicePathToText)(
+            const struct EFI_DEVICE_PATH_PROTOCOL *DeviceNode,
+            unsigned char DisplayOnly, unsigned char AllowShortcuts);
+};
+
+// Convert text to device path
+struct EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL {
+    unsigned long long _buf;
+
+    struct EFI_DEVICE_PATH_PROTOCOL *(*ConvertTextToDevicePath)(
+            const unsigned short *TextDevicePath);
 };
 
 // SystemTable is an argument of the UEFI's entry function.
@@ -115,7 +182,7 @@ struct EFI_SYSTEM_TABLE {
                 struct EFI_SIMPLE_TEXT_INPUT_PROTOCOL *This, struct EFI_INPUT_KEY *Key);
 
         void *WaitForKey;
-    } *ConIn;
+    } * ConIn;
 
     unsigned long long _buf2;
 
@@ -129,7 +196,7 @@ struct EFI_SYSTEM_TABLE {
 
         unsigned long long (*ClearScreen)(
                 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This);
-    } *ConOut;
+    } * ConOut;
 
     unsigned long long _buf[3];
 
@@ -165,7 +232,12 @@ struct EFI_SYSTEM_TABLE {
         unsigned long long _buf8[2];
 
         // Open/Close Protocol
-        unsigned long long _buf9[3];
+        unsigned long long (*OpenProtocol)(void *Handle, struct EFI_GUID *Protocol,
+                                           void **Interface, void *AgentHandle,
+                                           void *ControllerHandle,
+                                           unsigned int Attributes);
+
+        unsigned long long _buf9[2];
 
         // Library
         unsigned long long _buf10[2];
@@ -181,13 +253,17 @@ struct EFI_SYSTEM_TABLE {
         // Miscellaneous
         unsigned long long _buf12[3];
 
-    } *BootServices;
+    } * BootServices;
 };
 
 extern struct EFI_SYSTEM_TABLE *ST;
 extern struct EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 extern struct EFI_SIMPLE_POINTER_PROTOCOL *SPP;
 extern struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SFSP;
+extern struct EFI_DEVICE_PATH_TO_TEXT_PROTOCOL *DPTTP;
+extern struct EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL *DPFTP;
+
+extern struct EFI_GUID lip_guid;
 
 void efi_init(struct EFI_SYSTEM_TABLE *SystemTable);
 
@@ -199,4 +275,4 @@ void puth(unsigned long long val, unsigned char len);
 
 void wait_and_get_line(unsigned short *str, unsigned int max);
 
-#endif // EFI_H_
+#endif// EFI_H_
