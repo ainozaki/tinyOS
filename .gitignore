@@ -1,1 +1,3 @@
 fs/
+bootloader/BOOTX64.EFI
+.idea/
