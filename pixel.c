@@ -9,15 +9,27 @@ void fb_init(struct framebuffer *_fb) {
     fb->vr = _fb->vr;
 }
 
+void draw_px(unsigned int x,
+             unsigned int y,
+             unsigned char red,
+             unsigned char green,
+             unsigned char blue) {
+    struct pixelformat *p = fb->base;
+    p += y * fb->hr + x;
+    p->r = red;
+    p->g = green;
+    p->b = blue;
+}
+
 void set_screen(unsigned char red, unsigned char green, unsigned char blue) {
     unsigned int x, y;
-    struct pixelformat *p;
     for (y = 0; y < fb->vr; y++) {
         for (x = 0; x < fb->hr; x++) {
-            p = fb->base + (fb->hr * y) + x;
-            p->r = red;
-            p->g = green;
-            p->b = blue;
+            draw_px(x, y, red, green, blue);
         }
     }
+}
+
+void set_default_screen() {
+    set_screen(64, 224, 208);
 }

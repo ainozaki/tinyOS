@@ -3,12 +3,15 @@ CFLAGS = -Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-common
 LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
 SRCS = turos.c \
-			 pixel.c
+			 font.c \
+			 pixel.c \
+			 print.c
 SRCS_OBJ = $(SRCS:.c=.o)
-HEADERS = pixel.h
+HEADERS = font.h \
+					pixel.h \
+					print.h
 
 $(TARGET): $(SRCS_OBJ)
-	@echo "+is" $+
 	ld $(LDFLAGS) -o $@ $+
 
 %.o: %.c
