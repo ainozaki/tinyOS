@@ -1,33 +1,18 @@
-SRC = main.c \
-			common.c \
-			efi.c \
-			file.c \
-			graphics.c \
-			gui.c \
-			shell.c \
-			string.c
-HEADER = efi.h \
-					graphics.h \
-					gui.h \
-					shell.h \
-					string.h
-TARGET = fs/EFI/BOOT/BOOTX64.EFI
+TARGET = kernel.bin
+CFLAGS = -Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-common
+LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
-all: $(TARGET)
-app: fs/test.efi
+$(TARGET): main.o
+	ld $(LDFLAGS) -o $@ $+
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
 
-$(TARGET): $(SRC) $(HEADER)
-	x86_64-w64-mingw32-gcc -Wall -Wextra -e efi_main -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10 -o $@ $(SRC)
-
-fs/test.efi: testappp.c
-	x86_64-w64-mingw32-gcc -Wall -Wextra -e efi_main -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10 -shared -o $@ $<
-run:
-	qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -hda fat:rw:fs
-
+run: $(TARGET)
+	cp $(TARGET) fs/
+	#qemu-system-x86_64 -bios OVMF.fd -hda fat:rw:fs
+	qemu-system-x86_64 -bios OVMF.fd -drive if=ide,index=0,media=disk,format=raw,file=fat:rw:fs
 clean:
-	rm -rf $(TARGET)
+	rm -f *- *.o *.map $(TARGET)
 
-format: $(SRC) $(HEADER)
-	clang-format -i $^
+.PHONY: clean
 
-.PHONY: run clean format
