@@ -31,5 +31,5 @@ void intr_init() {
 	// Set IDTR
 	idtr[0] = ((unsigned long long)idt << 16) | (sizeof(idt) - 1);
 	idtr[1] = ((unsigned long long)idt >> 48);
-	__asm__ ("lidt idtr");
+	__asm__ volatile ("lidt idtr");
 }

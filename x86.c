@@ -41,3 +41,7 @@ void gdt_init() {
           : [dummy] "=r"(dummy)
           : [selector] "m"(selector));
 }
+
+void enable_cpu_intr(){
+	__asm__ volatile ("sti");
+}

@@ -25,4 +25,7 @@ unsigned char io_read(unsigned short address);
 // Initialize Grobal Desctiprot Table.
 void gdt_init();
 
+// Enable CPU interrupt
+void enable_cpu_intr();
+
 #endif// X86_H_
