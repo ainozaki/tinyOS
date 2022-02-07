@@ -15,6 +15,11 @@ $(TARGET): $(SRC) $(HEADER)
 
 fs/test.efi: testappp.c
 	x86_64-w64-mingw32-gcc -Wall -Wextra -e efi_main -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10 -shared -o $@ $<
+
+set:
+	rm -f ../fs/EFI/BOOT/BOOTX64.EFI
+	cp BOOTX64.EFI ../fs/EFI/BOOT/
+
 run:
 	rm -f ../fs/EFI/BOOT/BOOTX64.EFI
 	cp BOOTX64.EFI ../fs/EFI/BOOT/
@@ -26,4 +31,4 @@ clean:
 format: $(SRC) $(HEADER)
 	clang-format -i $^
 
-.PHONY: run clean format
+.PHONY: set run clean format
