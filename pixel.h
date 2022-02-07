@@ -4,17 +4,17 @@
 extern struct framebuffer *fb;
 
 struct pixelformat {
-    unsigned char b;
-    unsigned char g;
-    unsigned char r;
-    unsigned char _reserved;
+  unsigned char b;
+  unsigned char g;
+  unsigned char r;
+  unsigned char _reserved;
 };
 
 struct framebuffer {
-    struct pixelformat *base;// top address of framebuffer
-    unsigned long long size;
-    unsigned int hr;// horizontal resolution
-    unsigned int vr;// vertical resolution
+  struct pixelformat *base;// top address of framebuffer
+  unsigned long long size;
+  unsigned int hr;// horizontal resolution
+  unsigned int vr;// vertical resolution
 };
 
 // Register framebuffer pointer.

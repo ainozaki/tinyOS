@@ -1,6 +1,6 @@
 #ifndef KBC_H_
 #define KBC_H_
 
-unsigned char get_c();
+void kbc_intr_init();
 
-#endif // KBC_H_
+#endif// KBC_H_

@@ -4,12 +4,14 @@ LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
 SRCS = turos.c \
 			 font.c \
+			 intr.c \
 			 kbc.c \
 			 pixel.c \
 			 print.c \
 			 x86.c
 SRCS_OBJ = $(SRCS:.c=.o)
 HEADERS = font.h \
+					intr.h \
 					kbc.h \
 					pixel.h \
 					print.h \
