@@ -18,6 +18,7 @@ void putc(char c) {
             cursor_y = 0;
             set_default_screen();
         }
+				puts("TUROS> ");
         return;
     }
 
