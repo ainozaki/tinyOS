@@ -6,13 +6,15 @@ SRCS = turos.c \
 			 font.c \
 			 intr.c \
 			 kbc.c \
+			 pic.c \
 			 pixel.c \
 			 print.c \
 			 x86.c
-SRCS_OBJ = $(SRCS:.c=.o)
+SRCS_OBJ = $(SRCS:.c=.o) handler.o
 HEADERS = font.h \
 					intr.h \
 					kbc.h \
+					pic.h \
 					pixel.h \
 					print.h \
 					x86.h
@@ -21,6 +23,9 @@ $(TARGET): $(SRCS_OBJ)
 	ld $(LDFLAGS) -o $@ $+
 
 %.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+%.o: %.s
 	gcc $(CFLAGS) -c -o $@ $<
 
 run: $(TARGET)

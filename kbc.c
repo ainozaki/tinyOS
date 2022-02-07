@@ -1,6 +1,7 @@
 #include "kbc.h"
 
 #include "intr.h"
+#include "pic.h"
 #include "print.h"
 #include "x86.h"
 
@@ -12,6 +13,8 @@
 #define ASCII_ESC 0x1b
 #define ASCII_BS 0x08
 #define ASCII_HT 0x09
+
+#define KBC_INTR_NO 33
 
 const char keymap[] = {
         0x00, ASCII_ESC, '1',  '2',  '3',      '4',      '5',  '6',  '7',  '8',
@@ -31,13 +34,13 @@ const char keymap[] = {
 void do_kbc_interrupt() {
   // If OBF is off, return
   if (!(io_read(KBC_STATUS_ADDR) & KBC_STATUS_OBF)) {
-    return;
+    goto exit;
   }
 
   // If Make mode, return
   unsigned char key_data = io_read(KBC_DATA_ADDR);
   if (key_data & KBC_DATA_IS_BREAK) {
-    return;
+    goto exit;
   }
 
   unsigned char key = keymap[key_data];
@@ -47,10 +50,17 @@ void do_kbc_interrupt() {
     putc('\r');
   }
   putc(key);
+
+exit:
+  // Inform PIC the end of interrupt.
+  set_pic_eoi(KBC_INTR_NO);
 }
 
 void kbc_handler();
 
-void kbc_intr_init(){
-	set_intr(/*KBC_INTR_NO=*/33, kbc_handler);
+void kbc_intr_init() {
+  void *handler;
+  __asm__ volatile("lea kbc_handler, %[handler]" : [handler] "=r"(handler));
+  set_intr(KBC_INTR_NO, handler);
+  enable_pic_intr(KBC_INTR_NO);
 }

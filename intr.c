@@ -22,14 +22,14 @@ void set_intr(unsigned char intr_no, void *handler) {
 }
 
 void intr_init() {
-	// Set default handler
+  // Set default handler
   int i;
   for (i = 0; i < MAX_INTR_NO; i++) {
     set_intr(i, default_handler);
   }
 
-	// Set IDTR
-	idtr[0] = ((unsigned long long)idt << 16) | (sizeof(idt) - 1);
-	idtr[1] = ((unsigned long long)idt >> 48);
-	__asm__ volatile ("lidt idtr");
+  // Set IDTR
+  idtr[0] = ((unsigned long long) idt << 16) | (sizeof(idt) - 1);
+  idtr[1] = ((unsigned long long) idt >> 48);
+  __asm__ volatile("lidt idtr");
 }

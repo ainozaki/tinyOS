@@ -19,8 +19,9 @@ struct interrupt_descriptor {
   unsigned int _reserved;
 };
 
-// read |address| through i/o instruction.
+// read/write |address| through i/o instruction.
 unsigned char io_read(unsigned short address);
+void io_write(unsigned short address, unsigned char value);
 
 // Initialize Grobal Desctiprot Table.
 void gdt_init();

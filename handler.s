@@ -11,7 +11,7 @@ kbc_handler:
 	push	%rbp
 	push	%rsi
 	push	%rdi
-	call	do_kbc_handler
+	call	do_kbc_interrupt
 	pop		%rdi
 	pop		%rsi
 	pop		%rbp

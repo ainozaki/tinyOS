@@ -31,7 +31,7 @@ void efi_main(void *ImageHandle __attribute__((unused)),
     unsigned long long kernel_size = sizeof_file(kernel_file);
 
     struct header {
-        unsigned char _buf[0xc0];
+        unsigned char _buf[0x100];
         void *bss_start;
         unsigned long long bss_size;
     } head;
