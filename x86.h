@@ -23,7 +23,7 @@ struct interrupt_descriptor {
 unsigned char io_read(unsigned short address);
 void io_write(unsigned short address, unsigned char value);
 
-// Initialize Grobal Desctiprot Table.
+// Initialize GDT(Grobal Desctiptor Table)
 void gdt_init();
 
 // Enable CPU interrupt
