@@ -14,7 +14,9 @@
 
 unsigned long long sizeof_file(struct EFI_FILE_PROTOCOL *file);
 
-void file_read(struct EFI_FILE_PROTOCOL *src, void *dst, unsigned long long size);
+void file_read(struct EFI_FILE_PROTOCOL *src,
+               void *dst,
+               unsigned long long size);
 
 
 #endif// FILE_H_
