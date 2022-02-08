@@ -5,11 +5,16 @@
 #include "print.h"
 #include "x86.h"
 
+struct platform_info {
+	struct framebuffer fb;
+	void *rsdp;
+};
+
 // @_t: SystemTable address
 void start_kernel(void *_t __attribute__((unused)),
-                  struct framebuffer *fb,
+                  struct platform_info *platform_info,
                   void *_fs_start __attribute__((unused))) {
-  fb_init(fb);
+  fb_init(&platform_info->fb);
 
   // paint screen
   set_screen(64, 224, 208);
@@ -33,6 +38,19 @@ void start_kernel(void *_t __attribute__((unused)),
   puts("ENABLE CPU INTR...");
   enable_cpu_intr();
   puts("DONE\r\n");
+
+	// Dump RSDP signature
+	puts("DUMP RSDP SIGNATURE: ");
+	char *rsdp = (char *)platform_info->rsdp;
+	putc(*rsdp++);
+	putc(*rsdp++);
+	putc(*rsdp++);
+	putc(*rsdp++);
+	putc(*rsdp++);
+	putc(*rsdp++);
+	putc(*rsdp++);
+	putc(*rsdp);
+  puts(" ...DONE\r\n");
 
   while (1) {
     __asm__ volatile("hlt");

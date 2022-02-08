@@ -5,6 +5,18 @@
 #define KERNEL_NAME L"kernel.bin"
 #define KERNEL_START 0x0000000000110000
 
+struct fb {
+  unsigned long long base;
+  unsigned long long size;
+  unsigned int hr;
+  unsigned int vr;
+};
+
+struct platform_info {
+  struct fb fb;
+  void *rsdp;
+};
+
 void efi_main(void *ImageHandle __attribute__((unused)),
               struct EFI_SYSTEM_TABLE *SystemTable) {
   unsigned long long status;
@@ -70,35 +82,38 @@ void efi_main(void *ImageHandle __attribute__((unused)),
   dump_efi_conf_table();
   put(L"done\r\n");
 
-	// Get ACPI table
-	// Top of ACPI table is ASCII signature.
-	put(L"Get ACPI table... ");
-	char *acpi_table = find_efi_acpi_table();
-	put(L"done\r\n");
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table++);
-	putc(*acpi_table);
+  // Get ACPI table
+  // Top of ACPI table is ASCII signature.
+  put(L"Get ACPI table... ");
+  char *acpi_table = find_efi_acpi_table();
+  put(L"done\r\n");
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table++);
+  putc(*acpi_table);
 
-  // Exit BootLoader
+  // Pass to kernel
   unsigned long long kernel_arg1 = (unsigned long long) ST;
 
-  struct fb {
-    unsigned long long base;
-    unsigned long long size;
-    unsigned int hr;
-    unsigned int vr;
-  } fb;
+  struct fb fb;
   fb.base = GOP->Mode->FrameBufferBase;
   fb.size = GOP->Mode->FrameBufferSize;
   fb.hr = GOP->Mode->Info->HorizontalResolution;
   fb.vr = GOP->Mode->Info->VerticalResolution;
-  unsigned long long kernel_arg2 = (unsigned long long) &fb;
+
+  struct platform_info platform_info;
+  platform_info.fb.base = fb.base;
+  platform_info.fb.size = fb.size;
+  platform_info.fb.hr = fb.hr;
+  platform_info.fb.vr = fb.vr;
+  platform_info.rsdp = find_efi_acpi_table();
+
+  unsigned long long kernel_arg2 = (unsigned long long) &platform_info;
 
   unsigned long long kernel_arg3 = 0;// App start. Future work.
 
