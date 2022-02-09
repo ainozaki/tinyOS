@@ -1,3 +1,4 @@
+#include "acpi.h"
 #include "intr.h"
 #include "kbc.h"
 #include "pic.h"
@@ -6,8 +7,8 @@
 #include "x86.h"
 
 struct platform_info {
-	struct framebuffer fb;
-	void *rsdp;
+  struct framebuffer fb;
+  void *rsdp;
 };
 
 // @_t: SystemTable address
@@ -39,18 +40,28 @@ void start_kernel(void *_t __attribute__((unused)),
   enable_cpu_intr();
   puts("DONE\r\n");
 
-	// Dump RSDP signature
-	puts("DUMP RSDP SIGNATURE: ");
-	char *rsdp = (char *)platform_info->rsdp;
-	putc(*rsdp++);
-	putc(*rsdp++);
-	putc(*rsdp++);
-	putc(*rsdp++);
-	putc(*rsdp++);
-	putc(*rsdp++);
-	putc(*rsdp++);
-	putc(*rsdp);
+  // Dump RSDP signature
+  puts("DUMP RSDP SIGNATURE: ");
+  char *rsdp = (char *) platform_info->rsdp;
+  putc(*rsdp++);
+  putc(*rsdp++);
+  putc(*rsdp++);
+  putc(*rsdp++);
+  putc(*rsdp++);
+  putc(*rsdp++);
+  putc(*rsdp++);
+  putc(*rsdp);
   puts(" ...DONE\r\n");
+
+  // Register XSDT
+  puts("REGISTER XSDT...");
+  init_acpi(platform_info->rsdp);
+  puts("DONE\r\n");
+
+	// Dump XSDT entries
+	puts("DUMP XSDT ENTRIES: ");
+	dump_xsdt_entries();
+	puts("...DONE\r\n");
 
   while (1) {
     __asm__ volatile("hlt");
