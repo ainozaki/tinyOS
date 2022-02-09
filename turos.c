@@ -70,19 +70,15 @@ void start_kernel(void *_t __attribute__((unused)),
   init_hpet();
   puts("DONE\r\n");
 
+  // Read HPET registers
   puts("DUMP HPET RGISTERS...\r\n");
-	dump_gcidr();
-	dump_gcr();
-	dump_mcr();
-	volatile unsigned long long wait = 10000;
-	while (wait--);
-	dump_mcr();
-
-	// Get HPET
-	puts("GET HPET...");
-	struct SDTH *hpet_table = get_sdth("HPET");
-	dump_sdth_signature(hpet_table);
-	puts("...DONE\r\n");
+  dump_gcidr();
+  dump_gcr();
+  dump_mcr();
+  volatile unsigned long long wait = 10000;
+  while (wait--)
+    ;
+  dump_mcr();
 
   while (1) {
     __asm__ volatile("hlt");

@@ -52,16 +52,16 @@ void puts(char *s) {
   }
 }
 
-void putd(unsigned long long val, unsigned char len){
-	char str[MAX_STR_BUF];
+void putd(unsigned long long val, unsigned char len) {
+  char str[MAX_STR_BUF];
 
-	int i;
-	for (i = len - 1; i >= 0; i--) {
-		int digit = val % 10;
-		str[i] = '0' + digit;
-		val /= 10;
-	}
-	str[len] = '\0';
+  int i;
+  for (i = len - 1; i >= 0; i--) {
+    int digit = val % 10;
+    str[i] = '0' + digit;
+    val /= 10;
+  }
+  str[len] = '\0';
 
-	puts(str);
+  puts(str);
 }
