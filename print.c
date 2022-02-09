@@ -3,6 +3,8 @@
 #include "font.h"
 #include "pixel.h"
 
+#define MAX_STR_BUF 21
+
 unsigned int cursor_x = 0;
 unsigned int cursor_y = 0;
 
@@ -48,4 +50,18 @@ void puts(char *s) {
     putc(*s);
     s++;
   }
+}
+
+void putd(unsigned long long val, unsigned char len){
+	char str[MAX_STR_BUF];
+
+	int i;
+	for (i = len - 1; i >= 0; i--) {
+		int digit = val % 10;
+		str[i] = '0' + digit;
+		val /= 10;
+	}
+	str[len] = '\0';
+
+	puts(str);
 }

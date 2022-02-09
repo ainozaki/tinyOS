@@ -1,4 +1,6 @@
 #include "acpi.h"
+#include "common.h"
+#include "hpet.h"
 #include "intr.h"
 #include "kbc.h"
 #include "pic.h"
@@ -58,10 +60,23 @@ void start_kernel(void *_t __attribute__((unused)),
   init_acpi(platform_info->rsdp);
   puts("DONE\r\n");
 
-	// Dump XSDT entries
-	puts("DUMP XSDT ENTRIES: ");
-	dump_xsdt_entries();
-	puts("...DONE\r\n");
+  // Dump XSDT entries
+  puts("DUMP XSDT ENTRIES: ");
+  dump_xsdt_entries();
+  puts("...DONE\r\n");
+
+  // Get HPET
+  puts("INIT HPET...");
+  init_hpet();
+  puts("DONE\r\n");
+
+  puts("DUMP HPET RGISTERS...\r\n");
+	dump_gcidr();
+	dump_gcr();
+	dump_mcr();
+	volatile unsigned long long wait = 10000;
+	while (wait--);
+	dump_mcr();
 
 	// Get HPET
 	puts("GET HPET...");

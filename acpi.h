@@ -30,6 +30,14 @@ struct __attribute__((packed)) XSDT {
   struct SDTH *Entry[0];
 };
 
+struct __attribute__((packed)) ACPI_ADDRESS {
+  unsigned char address_space_id;
+  unsigned char register_bit_width;
+  unsigned char register_bit_offset;
+  unsigned char _reserved;
+  unsigned long long address;
+};
+
 void init_acpi(void *rsdp);
 
 void dump_xsdt_entries();
