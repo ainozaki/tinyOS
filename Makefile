@@ -4,6 +4,7 @@ LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
 SRCS = turos.c \
 			 acpi.c \
+			 common.c \
 			 font.c \
 			 intr.c \
 			 kbc.c \
@@ -13,6 +14,7 @@ SRCS = turos.c \
 			 x86.c
 SRCS_OBJ = $(SRCS:.c=.o) handler.o
 HEADERS = acpi.h \
+					common.h \
 					font.h \
 					intr.h \
 					kbc.h \

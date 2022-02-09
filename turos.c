@@ -63,6 +63,12 @@ void start_kernel(void *_t __attribute__((unused)),
 	dump_xsdt_entries();
 	puts("...DONE\r\n");
 
+	// Get HPET
+	puts("GET HPET...");
+	struct SDTH *hpet_table = get_sdth("HPET");
+	dump_sdth_signature(hpet_table);
+	puts("...DONE\r\n");
+
   while (1) {
     __asm__ volatile("hlt");
   }
