@@ -90,7 +90,7 @@ void dump_gcr(){
 }
 
 void dump_mcr(){
-	puts("MCR\r\n");
+	puts("MCR ");
 	putd(MCR, 16);
 	puts("\r\n");
 }

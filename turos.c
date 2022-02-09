@@ -74,6 +74,9 @@ void start_kernel(void *_t __attribute__((unused)),
 	dump_gcidr();
 	dump_gcr();
 	dump_mcr();
+	volatile unsigned long long wait = 10000;
+	while (wait--);
+	dump_mcr();
 
   while (1) {
     __asm__ volatile("hlt");
