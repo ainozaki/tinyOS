@@ -1,5 +1,6 @@
 #include "acpi.h"
 #include "common.h"
+#include "hpet.h"
 #include "intr.h"
 #include "kbc.h"
 #include "pic.h"
@@ -65,11 +66,14 @@ void start_kernel(void *_t __attribute__((unused)),
   puts("...DONE\r\n");
 
   // Get HPET
-  puts("GET HPET...");
-  struct SDTH *hpet_table = get_sdth("HPET");
-  check_nullptr((void *) hpet_table, "HPET_TABLE");
-  dump_sdth_signature(hpet_table);
-  puts("...DONE\r\n");
+  puts("INIT HPET...");
+  init_hpet();
+  puts("DONE\r\n");
+
+  puts("DUMP HPET RGISTERS...\r\n");
+	dump_gcidr();
+	dump_gcr();
+	dump_mcr();
 
   while (1) {
     __asm__ volatile("hlt");

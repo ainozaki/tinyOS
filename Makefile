@@ -6,6 +6,7 @@ SRCS = turos.c \
 			 acpi.c \
 			 common.c \
 			 font.c \
+			 hpet.c \
 			 intr.c \
 			 kbc.c \
 			 pic.c \
@@ -16,6 +17,7 @@ SRCS_OBJ = $(SRCS:.c=.o) handler.o
 HEADERS = acpi.h \
 					common.h \
 					font.h \
+					hpet.h \
 					intr.h \
 					kbc.h \
 					pic.h \
