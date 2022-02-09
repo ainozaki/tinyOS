@@ -18,4 +18,7 @@ void dump_gcidr();
 void dump_gcr();
 void dump_mcr();
 
+// sleep |us|
+void sleep(unsigned long long us);
+
 #endif// HPET_H_

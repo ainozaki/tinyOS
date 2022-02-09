@@ -43,6 +43,12 @@ void init_hpet() {
   check_nullptr((void *) hpet_table, "HPET_TABLE");
 
   hpet_reg = hpet_table->base_address.address;
+
+  // Disable HPET
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 0;
+  GCR = gcr.raw;
 }
 
 void dump_gcidr() {
@@ -93,4 +99,34 @@ void dump_mcr() {
   puts("[MCR] ");
   putd(MCR, 16);
   puts("\r\n");
+}
+
+void sleep(unsigned long long us) {
+  // Caluculate main counter of us seconds after.
+  unsigned long long main_counter_now = MCR;
+  unsigned long long fs = us * 1000000000;
+  union gcidr gcidr;
+  gcidr.raw = GCIDR;
+  unsigned long long main_counter_duration = fs / gcidr.counter_clk_period;
+  unsigned long long main_counter_after =
+          main_counter_now + main_counter_duration;
+
+  // Enable HPET
+  union gcr gcr;
+  gcr.raw = GCR;
+  unsigned char to_disable = 0;
+  if (!gcr.enable_cnf) {
+    gcr.enable_cnf = 1;
+    GCR = gcr.raw;
+    to_disable = 1;
+  }
+
+  while (MCR < main_counter_after)
+    ;
+
+  if (to_disable) {
+    gcr.raw = GCR;
+    gcr.enable_cnf = 0;
+    GCR = gcr.raw;
+  }
 }

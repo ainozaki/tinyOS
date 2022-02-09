@@ -80,6 +80,10 @@ void start_kernel(void *_t __attribute__((unused)),
     ;
   dump_mcr();
 
+  // Sleep
+  puts("SLEEP 3 SEC...");
+  sleep(3 * 1000000);
+  puts("DONE\r\n");
   while (1) {
     __asm__ volatile("hlt");
   }
