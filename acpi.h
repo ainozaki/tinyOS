@@ -33,5 +33,8 @@ struct __attribute__((packed)) XSDT {
 void init_acpi(void *rsdp);
 
 void dump_xsdt_entries();
+void dump_sdth_signature(struct SDTH *sdth);
+
+struct SDTH *get_sdth(char *signature);
 
 #endif// ACPI_H_

@@ -1,4 +1,5 @@
 #include "acpi.h"
+#include "common.h"
 #include "intr.h"
 #include "kbc.h"
 #include "pic.h"
@@ -58,10 +59,17 @@ void start_kernel(void *_t __attribute__((unused)),
   init_acpi(platform_info->rsdp);
   puts("DONE\r\n");
 
-	// Dump XSDT entries
-	puts("DUMP XSDT ENTRIES: ");
-	dump_xsdt_entries();
-	puts("...DONE\r\n");
+  // Dump XSDT entries
+  puts("DUMP XSDT ENTRIES: ");
+  dump_xsdt_entries();
+  puts("...DONE\r\n");
+
+  // Get HPET
+  puts("GET HPET...");
+  struct SDTH *hpet_table = get_sdth("HPET");
+  check_nullptr((void *) hpet_table, "HPET_TABLE");
+  dump_sdth_signature(hpet_table);
+  puts("...DONE\r\n");
 
   while (1) {
     __asm__ volatile("hlt");
