@@ -4,9 +4,12 @@
 #include "common.h"
 #include "print.h"
 
-unsigned long long hpet_reg;
+#define TIMER_N 0
 
-// General Capabilities and ID Register
+unsigned long long hpet_reg;
+unsigned int counter_clk_period;
+
+// GCIDR (General Capabilities and ID Register)
 #define GCIDR_ADDR (hpet_reg)
 #define GCIDR (*(volatile unsigned long long *) GCIDR_ADDR)
 union gcidr {
@@ -22,7 +25,7 @@ union gcidr {
   };
 };
 
-// General Configuration Register
+// GCR (General Configuration Register)
 #define GCR_ADDR (hpet_reg + 0x10)
 #define GCR (*(volatile unsigned long long *) GCR_ADDR)
 union gcr {
@@ -34,10 +37,41 @@ union gcr {
   };
 };
 
-
-// Main Counter Register
+// MCR (Main Counter Register)
 #define MCR_ADDR (hpet_reg + 0xf0)
 #define MCR (*(volatile unsigned long long *) MCR_ADDR)
+
+// TNCCR (Timer N Configuration and Capabilities Register)
+#define TNCCR_ADDR(n) (hpet_reg + (0x20 * (n)) + 0x100)
+#define TNCCR(n) (*(volatile unsigned long long *) (TNCCR_ADDR(n)))
+#define TNCCR_INT_TYPE_EDGE 0
+#define TNCCR_INT_TYPE_LEVEL 1
+#define TNCCR_TYPE_NOW_PERIODIC 0
+#define TNCCR_TYPE_PERIODIC 1
+union tnccr {
+  unsigned long long raw;
+  struct __attribute__((packed)) {
+    unsigned long long _reserved1 : 1;
+    unsigned long long int_type_cnf : 1;
+    unsigned long long int_enb_cnf : 1;
+    unsigned long long type_cnf : 1;
+    unsigned long long per_int_cap : 1;
+    unsigned long long size_cap : 1;
+    unsigned long long val_set_cnf : 1;
+    unsigned long long _reserved2 : 1;
+    unsigned long long mode32_cnf : 1;
+    unsigned long long int_route_cnf : 5;
+    unsigned long long fsb_en_cnf : 1;
+    unsigned long long fsb_int_del_cap : 1;
+    unsigned long long _reserved3 : 16;
+    unsigned long long int_route_cap : 32;
+  };
+};
+
+// TNCR (TImer N COmparator Register)
+#define TNCR_ADDR(n) (hpet_reg + (0x20 * (n)) + 0x108)
+#define TNCR(n) (*(volatile unsigned long long *) (TNCR_ADDR(n)))
+
 void init_hpet() {
   struct HPET_TABLE *hpet_table = (struct HPET_TABLE *) get_sdth("HPET");
   check_nullptr((void *) hpet_table, "HPET_TABLE");
@@ -49,6 +83,25 @@ void init_hpet() {
   gcr.raw = GCR;
   gcr.enable_cnf = 0;
   GCR = gcr.raw;
+
+	// Get counter period
+	union gcidr gcidr;
+	gcidr.raw = GCIDR;
+	counter_clk_period = gcidr.counter_clk_period;
+
+	// Interrupt setting
+	union tnccr tnccr;
+	tnccr.raw = TNCCR(TIMER_N);
+	tnccr.int_type_cnf = 0; // EDGE
+	tnccr.int_enb_cnf = 0;
+	tnccr.type_cnf = 0; // NON_PREIODIC
+	tnccr.val_set_cnf = 0;
+	tnccr.mode32_cnf = 0;
+	tnccr.fsb_en_cnf = 0;
+	tnccr._reserved1 = 0;
+	tnccr._reserved2 = 0;
+	tnccr._reserved3 = 0;
+	TNCCR(TIMER_N) = tnccr.raw;
 }
 
 void dump_gcidr() {
@@ -116,6 +169,7 @@ void sleep(unsigned long long us) {
   gcr.raw = GCR;
   unsigned char to_disable = 0;
   if (!gcr.enable_cnf) {
+		puts("ENABLE HPET ");
     gcr.enable_cnf = 1;
     GCR = gcr.raw;
     to_disable = 1;
