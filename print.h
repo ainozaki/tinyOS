@@ -7,4 +7,5 @@ void puts(char *s);
 
 void putd(unsigned long long val, unsigned char len);
 
+void puth(unsigned long long val, unsigned char len);
 #endif// PRINT_H_

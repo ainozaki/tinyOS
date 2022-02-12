@@ -65,3 +65,23 @@ void putd(unsigned long long val, unsigned char len) {
 
   puts(str);
 }
+
+void puth(unsigned long long val, unsigned char len) {
+  char str[MAX_STR_BUF];
+
+  str[0] = '0';
+  str[1] = 'X';
+
+  int i;
+  for (i = len + 1; i >= 2; i--) {
+    int digit = val % 16;
+    if ((digit >= 0) && (digit <= 9)) {
+      str[i] = '0' + digit;
+    } else {
+      str[i] = 'A' + digit - 10;
+    }
+    val /= 16;
+  }
+  str[len + 2] = '\0';
+  puts(str);
+}

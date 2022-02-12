@@ -3,6 +3,8 @@
 
 #include "acpi.h"
 
+#define HPET_INTR_NO 32
+
 struct __attribute__((packed)) HPET_TABLE {
   struct SDTH header;
   unsigned int event_timer_block_id;
@@ -20,5 +22,8 @@ void dump_mcr();
 
 // sleep |us|
 void sleep(unsigned long long us);
+
+// do |handler| after |us|
+void alert(unsigned long long us);
 
 #endif// HPET_H_

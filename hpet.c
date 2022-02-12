@@ -2,12 +2,17 @@
 
 #include "acpi.h"
 #include "common.h"
+#include "intr.h"
+#include "pic.h"
 #include "print.h"
 
 #define TIMER_N 0
+#define US_TO_FS 1000000000
 
 unsigned long long hpet_reg;
 unsigned int counter_clk_period;
+
+//void (*user_handler)(unsigned long long rsp) = NULL;
 
 // GCIDR (General Capabilities and ID Register)
 #define GCIDR_ADDR (hpet_reg)
@@ -44,10 +49,6 @@ union gcr {
 // TNCCR (Timer N Configuration and Capabilities Register)
 #define TNCCR_ADDR(n) (hpet_reg + (0x20 * (n)) + 0x100)
 #define TNCCR(n) (*(volatile unsigned long long *) (TNCCR_ADDR(n)))
-#define TNCCR_INT_TYPE_EDGE 0
-#define TNCCR_INT_TYPE_LEVEL 1
-#define TNCCR_TYPE_NOW_PERIODIC 0
-#define TNCCR_TYPE_PERIODIC 1
 union tnccr {
   unsigned long long raw;
   struct __attribute__((packed)) {
@@ -72,6 +73,8 @@ union tnccr {
 #define TNCR_ADDR(n) (hpet_reg + (0x20 * (n)) + 0x108)
 #define TNCR(n) (*(volatile unsigned long long *) (TNCR_ADDR(n)))
 
+void hpet_handler(void);
+
 void init_hpet() {
   struct HPET_TABLE *hpet_table = (struct HPET_TABLE *) get_sdth("HPET");
   check_nullptr((void *) hpet_table, "HPET_TABLE");
@@ -82,26 +85,36 @@ void init_hpet() {
   union gcr gcr;
   gcr.raw = GCR;
   gcr.enable_cnf = 0;
+  gcr.leg_rt_cnf = 1;
   GCR = gcr.raw;
 
-	// Get counter period
-	union gcidr gcidr;
-	gcidr.raw = GCIDR;
-	counter_clk_period = gcidr.counter_clk_period;
+  // Get counter period
+  union gcidr gcidr;
+  gcidr.raw = GCIDR;
+  counter_clk_period = gcidr.counter_clk_period;
 
-	// Interrupt setting
-	union tnccr tnccr;
-	tnccr.raw = TNCCR(TIMER_N);
-	tnccr.int_type_cnf = 0; // EDGE
-	tnccr.int_enb_cnf = 0;
-	tnccr.type_cnf = 0; // NON_PREIODIC
-	tnccr.val_set_cnf = 0;
-	tnccr.mode32_cnf = 0;
-	tnccr.fsb_en_cnf = 0;
-	tnccr._reserved1 = 0;
-	tnccr._reserved2 = 0;
-	tnccr._reserved3 = 0;
-	TNCCR(TIMER_N) = tnccr.raw;
+  // Interrupt setting
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_type_cnf = 0;// EDGE
+  tnccr.int_enb_cnf = 0;
+  tnccr.type_cnf = 0;// NON_PREIODIC
+  tnccr.val_set_cnf = 0;
+  tnccr.mode32_cnf = 0;
+  tnccr.fsb_en_cnf = 0;
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  // register IDT
+  // (Kernel crashes without lea)
+  void *handler;
+  __asm__ volatile("lea hpet_handler, %[handler]" : [handler] "=r"(handler));
+  set_intr(HPET_INTR_NO, handler);
+
+  // Deactive PIC mask
+  enable_pic_intr(HPET_INTR_NO);
 }
 
 void dump_gcidr() {
@@ -169,18 +182,66 @@ void sleep(unsigned long long us) {
   gcr.raw = GCR;
   unsigned char to_disable = 0;
   if (!gcr.enable_cnf) {
-		puts("ENABLE HPET ");
+    puts("ENABLE HPET ");
     gcr.enable_cnf = 1;
     GCR = gcr.raw;
     to_disable = 1;
   }
 
-  while (MCR < main_counter_after)
-    ;
+  while (MCR < main_counter_after) {
+  }
 
   if (to_disable) {
     gcr.raw = GCR;
     gcr.enable_cnf = 0;
     GCR = gcr.raw;
   }
+}
+
+
+void alert(unsigned long long us) {
+  // Enable non-preiodic interrupt
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_enb_cnf = 1;
+  tnccr.type_cnf = 0;// NON_PREIODIC
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  // zero clear main-counter
+  MCR = (unsigned long long) 0;
+
+  // Comparator
+  unsigned long long femt_sec = us * US_TO_FS;
+  unsigned long long clk_counts = femt_sec / counter_clk_period;
+  TNCR(TIMER_N) = clk_counts;
+
+  // Enable HPET
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 1;
+  GCR = gcr.raw;
+}
+
+void do_hpet_interrupt() {
+  puts("DO_HPET_INTERRUPT\r\n");
+  // disable HPET
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 0;
+  GCR = gcr.raw;
+
+  // disable interrupt
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_enb_cnf = 0;
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  // End Of Interrupt
+  set_pic_eoi(HPET_INTR_NO);
 }

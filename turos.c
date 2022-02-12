@@ -37,11 +37,6 @@ void start_kernel(void *_t __attribute__((unused)),
   kbc_intr_init();
   puts("DONE\r\n");
 
-  // Enable interrupt CPU
-  puts("ENABLE CPU INTR...");
-  enable_cpu_intr();
-  puts("DONE\r\n");
-
   // Dump RSDP signature
   puts("DUMP RSDP SIGNATURE: ");
   char *rsdp = (char *) platform_info->rsdp;
@@ -60,15 +55,15 @@ void start_kernel(void *_t __attribute__((unused)),
   init_acpi(platform_info->rsdp);
   puts("DONE\r\n");
 
+  // Initialize HPET
+  puts("INITIALIZE HPET...");
+  init_hpet();
+  puts("DONE\r\n");
+
   // Dump XSDT entries
   puts("DUMP XSDT ENTRIES: ");
   dump_xsdt_entries();
   puts("...DONE\r\n");
-
-  // Get HPET
-  puts("INIT HPET...");
-  init_hpet();
-  puts("DONE\r\n");
 
   // Read HPET registers
   puts("DUMP HPET RGISTERS...\r\n");
@@ -81,9 +76,20 @@ void start_kernel(void *_t __attribute__((unused)),
   dump_mcr();
 
   // Sleep
-  puts("SLEEP 3 SEC...");
-  sleep(3 * 1000000);
+  puts("SLEEP 2 SEC...");
+  sleep(2 * 1000000);
   puts("DONE\r\n");
+
+  // Alert
+  puts("ALERT AFTER 5 SEC...");
+  alert(5 * 1000000);
+  puts("\r\n");
+
+  // Enable interrupt CPU
+  puts("ENABLE CPU INTR...");
+  enable_cpu_intr();
+  puts("DONE\r\n");
+
   while (1) {
     __asm__ volatile("hlt");
   }

@@ -1,5 +1,6 @@
 #include "pic.h"
 
+#include "print.h"
 #include "x86.h"
 
 #define MPIC_ICW1_ADDR 0x0020
@@ -38,6 +39,7 @@ void pic_init(void) {
 }
 
 void enable_pic_intr(unsigned char intr_no) {
+  puts("ENABLE_PIC_INTR");
   unsigned char ir_no = intr_no - INTR_NO_BASE_MASTER;
   unsigned char ir_bit = 1U << ir_no;
 
