@@ -11,6 +11,8 @@
 
 unsigned long long hpet_reg;
 unsigned int counter_clk_period;
+unsigned long long cmpr_clk_counts;
+unsigned char is_oneshot = 0;
 
 //void (*user_handler)(unsigned long long rsp) = NULL;
 
@@ -200,6 +202,8 @@ void sleep(unsigned long long us) {
 
 
 void alert(unsigned long long us) {
+  is_oneshot = 1;
+
   // Enable non-preiodic interrupt
   union tnccr tnccr;
   tnccr.raw = TNCCR(TIMER_N);
@@ -226,14 +230,79 @@ void alert(unsigned long long us) {
 }
 
 void do_hpet_interrupt() {
-  puts("DO_HPET_INTERRUPT\r\n");
-  // disable HPET
+  puts("INTERRUPT!!!\r\n");
+
+  if (is_oneshot) {
+    // disable HPET
+    union gcr gcr;
+    gcr.raw = GCR;
+    gcr.enable_cnf = 0;
+    GCR = gcr.raw;
+
+    // disable interrupt
+    union tnccr tnccr;
+    tnccr.raw = TNCCR(TIMER_N);
+    tnccr.int_enb_cnf = 0;
+    tnccr._reserved1 = 0;
+    tnccr._reserved2 = 0;
+    tnccr._reserved3 = 0;
+    TNCCR(TIMER_N) = tnccr.raw;
+
+    is_oneshot = 0;
+  }
+
+  // End Of Interrupt
+  set_pic_eoi(HPET_INTR_NO);
+}
+
+void ptimer_setup(unsigned long long us) {
+  // Disable HPET
   union gcr gcr;
   gcr.raw = GCR;
   gcr.enable_cnf = 0;
   GCR = gcr.raw;
 
-  // disable interrupt
+  // Enable preiodic interrupt
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.int_enb_cnf = 1;
+  tnccr.type_cnf = 1;// Preiodic
+  tnccr._reserved1 = 0;
+  tnccr._reserved2 = 0;
+  tnccr._reserved3 = 0;
+  TNCCR(TIMER_N) = tnccr.raw;
+
+  // Comparator
+  unsigned long long femt_sec = us * US_TO_FS;
+  cmpr_clk_counts = femt_sec / counter_clk_period;
+}
+
+void ptimer_start() {
+  // Initialize comparator
+  union tnccr tnccr;
+  tnccr.raw = TNCCR(TIMER_N);
+  tnccr.val_set_cnf = 1;
+  TNCCR(TIMER_N) = tnccr.raw;
+  TNCR(TIMER_N) = cmpr_clk_counts;
+
+  // Initialize main counter
+  MCR = (unsigned long long) 0;
+
+  // Enable HPET
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 1;
+  GCR = gcr.raw;
+}
+
+void ptimer_stop() {
+  // Disable HPET
+  union gcr gcr;
+  gcr.raw = GCR;
+  gcr.enable_cnf = 0;
+  GCR = gcr.raw;
+
+  // Disable interrupt
   union tnccr tnccr;
   tnccr.raw = TNCCR(TIMER_N);
   tnccr.int_enb_cnf = 0;
@@ -241,7 +310,4 @@ void do_hpet_interrupt() {
   tnccr._reserved2 = 0;
   tnccr._reserved3 = 0;
   TNCCR(TIMER_N) = tnccr.raw;
-
-  // End Of Interrupt
-  set_pic_eoi(HPET_INTR_NO);
 }

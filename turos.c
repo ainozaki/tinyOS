@@ -81,9 +81,12 @@ void start_kernel(void *_t __attribute__((unused)),
   puts("DONE\r\n");
 
   // Alert
-  puts("ALERT AFTER 5 SEC...");
-  alert(5 * 1000000);
-  puts("\r\n");
+  //puts("ALERT AFTER 5 SEC...\r\n");
+  //alert(5 * 1000000);
+
+  ptimer_setup(1 * 1000000);
+  puts("START PTIMER...\r\n");
+  ptimer_start();
 
   // Enable interrupt CPU
   puts("ENABLE CPU INTR...");

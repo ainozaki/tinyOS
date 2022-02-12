@@ -18,7 +18,7 @@ void set_intr(unsigned char intr_no, void *handler) {
     puts("NULL HANDLER\r\n");
     __asm__ volatile("hlt");
   }
-	/*
+  /*
   puts("INTR HANDLER: NO:");
   putd(intr_no, 2);
   puts(" HANDLER_ADDR:");

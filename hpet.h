@@ -26,4 +26,8 @@ void sleep(unsigned long long us);
 // do |handler| after |us|
 void alert(unsigned long long us);
 
+void ptimer_setup(unsigned long long us);
+void ptimer_start();
+void ptimer_stop();
+
 #endif// HPET_H_
