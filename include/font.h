@@ -2,7 +2,7 @@
 #define FONT_H_
 
 #define FONT_WIDTH 8
-#define FONT_HEIGHT 10
+#define FONT_HEIGHT 16
 
 extern const unsigned char font_bitmap[][FONT_HEIGHT][FONT_WIDTH];
 
