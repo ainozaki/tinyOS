@@ -12,6 +12,7 @@ SRCS = turos.c \
 			 pic.c \
 			 pixel.c \
 			 print.c \
+			 syscall.c \
 			 x86.c
 SRCS_OBJ = $(SRCS:.c=.o) handler.o
 HEADERS = acpi.h \
@@ -23,6 +24,7 @@ HEADERS = acpi.h \
 					pic.h \
 					pixel.h \
 					print.h \
+					syscall.h \
 					x86.h
 
 $(TARGET): $(SRCS_OBJ)

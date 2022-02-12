@@ -6,6 +6,7 @@
 #include "pic.h"
 #include "pixel.h"
 #include "print.h"
+#include "syscall.h"
 #include "x86.h"
 
 struct platform_info {
@@ -26,9 +27,10 @@ void start_kernel(void *_t __attribute__((unused)),
   puts("HELLO TUROS\r\n");
 
   // Initialize CPU
-  puts("INTIALIZE GDT AND INTR... ");
+  puts("INTIALIZE GDT, INTR, SYSCALL... ");
   gdt_init();
   intr_init();
+  init_syscall();
   puts("DONE\r\n");
 
   // Initialize IC
@@ -84,9 +86,22 @@ void start_kernel(void *_t __attribute__((unused)),
   //puts("ALERT AFTER 5 SEC...\r\n");
   //alert(5 * 1000000);
 
-  ptimer_setup(1 * 1000000);
-  puts("START PTIMER...\r\n");
-  ptimer_start();
+  //ptimer_setup(1 * 1000000);
+  //puts("START PTIMER...\r\n");
+  //ptimer_start();
+
+  unsigned long long softirq_ret;
+  asm volatile(
+          "movq $1, %%rdi\n"
+          "movq $2, %%rsi\n"
+          "movq $3, %%rdx\n"
+          "movq $4, %%rcx\n"
+          "int $0x80\n"
+          "movq %%rax, %[softirq_ret]"
+          : [softirq_ret] "=r"(softirq_ret)
+          :);
+  puth(softirq_ret, 16);
+	puts("\r\n");
 
   // Enable interrupt CPU
   puts("ENABLE CPU INTR...");
