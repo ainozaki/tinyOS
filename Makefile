@@ -1,5 +1,5 @@
 TARGET = kernel.bin
-CFLAGS = -Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-common
+CFLAGS = -I./include/ -Wall -Wextra -nostdinc -nostdlib -fno-builtin -fno-common
 LDFLAGS = -Map kernel.map -s -x -T kernel.ld
 
 SRCS = turos.c \
@@ -15,17 +15,17 @@ SRCS = turos.c \
 			 syscall.c \
 			 x86.c
 SRCS_OBJ = $(SRCS:.c=.o) handler.o
-HEADERS = acpi.h \
-					common.h \
-					font.h \
-					hpet.h \
-					intr.h \
-					kbc.h \
-					pic.h \
-					pixel.h \
-					print.h \
-					syscall.h \
-					x86.h
+HEADERS = include/acpi.h \
+					include/common.h \
+					include/font.h \
+					include/hpet.h \
+					include/intr.h \
+					include/kbc.h \
+					include/pic.h \
+					include/pixel.h \
+					include/print.h \
+					include/syscall.h \
+					include/x86.h
 
 $(TARGET): $(SRCS_OBJ)
 	ld $(LDFLAGS) -o $@ $+

@@ -101,7 +101,7 @@ void start_kernel(void *_t __attribute__((unused)),
           : [softirq_ret] "=r"(softirq_ret)
           :);
   puth(softirq_ret, 16);
-	puts("\r\n");
+  puts("\r\n");
 
   // Enable interrupt CPU
   puts("ENABLE CPU INTR...");
