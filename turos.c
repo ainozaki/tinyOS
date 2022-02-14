@@ -7,6 +7,7 @@
 #include "pic.h"
 #include "pixel.h"
 #include "print.h"
+#include "proc.h"
 #include "syscall.h"
 #include "x86.h"
 
@@ -128,6 +129,11 @@ void start_kernel(void *_t __attribute__((unused)),
     puts((char *) good->data);
     puts("\r\n");
   }
+  puts("DONE\r\n");
+
+  puts("EXEC...");
+  exec(open("test"));
+  puts("DONE\r\n");
 
   while (1) {
     __asm__ volatile("hlt");

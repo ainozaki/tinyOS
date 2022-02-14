@@ -13,6 +13,7 @@ SRCS = turos.c \
 			 pic.c \
 			 pixel.c \
 			 print.c \
+			 proc.c \
 			 syscall.c \
 			 x86.c
 SRCS_OBJ = $(SRCS:.c=.o) handler.o
@@ -26,6 +27,7 @@ HEADERS = include/acpi.h \
 					include/pic.h \
 					include/pixel.h \
 					include/print.h \
+					include/proc.h \
 					include/syscall.h \
 					include/x86.h
 

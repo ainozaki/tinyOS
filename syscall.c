@@ -6,6 +6,11 @@
 
 #define SYSCALL_INTR_NO 0x80
 
+enum SYSCALL_NO {
+  SYSCALL_PUTC,
+  SYSCALL_MAX,
+};
+
 void syscall_handler();
 
 void init_syscall() {
@@ -21,20 +26,17 @@ void init_syscall() {
 
 unsigned long long do_syscall_interrupt(unsigned long long syscall_id,
                                         unsigned long long arg1,
-                                        unsigned long long arg2,
-                                        unsigned long long arg3) {
-  unsigned long long ret = 0xcafe;
+                                        unsigned long long arg2
+                                        __attribute__((unused)),
+                                        unsigned long long arg3
+                                        __attribute__((unused))) {
+  unsigned long long ret = 0;
 
-  puts("SYSCALL_ID:");
-  puth(syscall_id, 16);
-  puts("\r\n");
-  puts("ARGS:");
-  puth(arg1, 16);
-  puts(" ");
-  puth(arg2, 16);
-  puts(" ");
-  puth(arg3, 16);
-  puts("\r\n");
+  switch (syscall_id) {
+    case SYSCALL_PUTC:
+      putc((char) arg1);
+      break;
+  }
 
   // End of Interrupt
   set_pic_eoi(SYSCALL_INTR_NO);
