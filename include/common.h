@@ -7,6 +7,7 @@
 
 void check_nullptr(void *ptr, char *message);
 
+int strcmp(const char *s1, const char *s2);
 int strncmp(char *s1, char *s2, unsigned long long n);
 
 #endif// COMMON_H_

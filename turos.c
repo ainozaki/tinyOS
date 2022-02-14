@@ -1,5 +1,6 @@
 #include "acpi.h"
 #include "common.h"
+#include "fs.h"
 #include "hpet.h"
 #include "intr.h"
 #include "kbc.h"
@@ -17,7 +18,7 @@ struct platform_info {
 // @_t: SystemTable address
 void start_kernel(void *_t __attribute__((unused)),
                   struct platform_info *platform_info,
-                  void *_fs_start __attribute__((unused))) {
+                  void *_fs_start) {
   fb_init(&platform_info->fb);
 
   // paint screen
@@ -25,6 +26,10 @@ void start_kernel(void *_t __attribute__((unused)),
 
   // display character
   puts("HELLO TUROS\r\n");
+
+  puts("INTIALIZE FS... ");
+  fs_init(_fs_start);
+  puts("DONE\r\n");
 
   // Initialize CPU
   puts("INTIALIZE GDT, INTR, SYSCALL... ");
@@ -107,6 +112,22 @@ void start_kernel(void *_t __attribute__((unused)),
   puts("ENABLE CPU INTR...");
   enable_cpu_intr();
   puts("DONE\r\n");
+
+  puts("OPENING FS...\r\n");
+  struct file *hello = open("HELLO.TXT");
+  if (hello) {
+    puts((char *) hello->filename);
+    puts(": ");
+    puts((char *) hello->data);
+    puts("\r\n");
+  }
+  struct file *good = open("GOOD.TXT");
+  if (good) {
+    puts((char *) good->filename);
+    puts(": ");
+    puts((char *) good->data);
+    puts("\r\n");
+  }
 
   while (1) {
     __asm__ volatile("hlt");

@@ -3,7 +3,10 @@
 #include "file.h"
 
 #define KERNEL_NAME L"kernel.bin"
+#define APP_NAME L"fs.img"
 #define KERNEL_START 0x0000000000110000
+#define APP_START 0x0000000100000000
+
 
 struct fb {
   unsigned long long base;
@@ -44,7 +47,7 @@ void efi_main(void *ImageHandle __attribute__((unused)),
   unsigned long long kernel_size = sizeof_file(kernel_file);
 
   struct header {
-    unsigned char _buf[0x180];
+    unsigned char _buf[0x1a0];
     void *bss_start;
     unsigned long long bss_size;
   } head;
@@ -60,6 +63,26 @@ void efi_main(void *ImageHandle __attribute__((unused)),
   put(L"Close kernel_file...");
   kernel_file->Close(kernel_file);
   put(L"done\r\n");
+
+  // Open app file
+  unsigned char has_app = 1;
+  put(L"Open app file...");
+  struct EFI_FILE_PROTOCOL *app_file;
+  status = root->Open(root, &app_file, APP_NAME, EFI_FILE_MODE_READ,
+                      /*Attributes=*/0);
+  if (status) {
+    has_app = 0;
+    put(L"no app\r\n");
+  }
+  put(L"done\r\n");
+
+  if (has_app) {
+    unsigned long long app_start = APP_START;
+    unsigned long long app_size = sizeof_file(app_file);
+    put(L"Load app...");
+    file_read(app_file, (void *) app_start, app_size);
+    put(L"done\r\n");
+  }
 
   // Debug
   put(L"kernel body first 16 bytes: 0x");
@@ -115,7 +138,10 @@ void efi_main(void *ImageHandle __attribute__((unused)),
 
   unsigned long long kernel_arg2 = (unsigned long long) &platform_info;
 
-  unsigned long long kernel_arg3 = 0;// App start. Future work.
+  unsigned long long kernel_arg3;
+  if (has_app) {
+    kernel_arg3 = APP_START;
+  }
 
   put_param(L"kernel_arg1", kernel_arg1);
   put_param(L"kernel_arg2", kernel_arg2);

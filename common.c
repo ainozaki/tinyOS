@@ -12,6 +12,21 @@ void check_nullptr(void *ptr, char *message) {
   }
 }
 
+int strcmp(const char *s1, const char *s2) {
+  unsigned char c1, c2;
+  int res = 0;
+
+  do {
+    c1 = *s1++;
+    c2 = *s2++;
+    res = c1 - c2;
+    if (res) {
+      break;
+    }
+  } while (c1);
+  return res;
+}
+
 int strncmp(char *s1, char *s2, unsigned long long n) {
   unsigned long long i;
   for (i = 0; i < n; i++) {
