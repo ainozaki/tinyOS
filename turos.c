@@ -137,6 +137,7 @@ void start_kernel(void *_t __attribute__((unused)),
   //puts("DONE\r\n");
 
   pci_search_and_dump();
+  dump_bar();
 
   while (1) {
     __asm__ volatile("hlt");
