@@ -16,8 +16,21 @@ unsigned char io_read(unsigned short address) {
   return value;
 }
 
+unsigned int io_read32(unsigned short address) {
+  unsigned int value;
+  __asm__ volatile("inl %[address], %[value]"
+                   : [value] "=a"(value)
+                   : [address] "d"(address));
+  return value;
+}
+
 void io_write(unsigned short address, unsigned char value) {
   __asm__ volatile("outb %[value], %[address]" ::[value] "a"(value),
+                   [address] "d"(address));
+}
+
+void io_write32(unsigned short address, unsigned int value) {
+  __asm__ volatile("outl %[value], %[address]" ::[value] "a"(value),
                    [address] "d"(address));
 }
 

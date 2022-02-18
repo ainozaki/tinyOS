@@ -10,6 +10,7 @@ SRCS = turos.c \
 			 hpet.c \
 			 intr.c \
 			 kbc.c \
+			 pci.c \
 			 pic.c \
 			 pixel.c \
 			 print.c \
@@ -24,6 +25,7 @@ HEADERS = include/acpi.h \
 					include/hpet.h \
 					include/intr.h \
 					include/kbc.h \
+					include/pci.h \
 					include/pic.h \
 					include/pixel.h \
 					include/print.h \
@@ -45,7 +47,8 @@ run: $(TARGET)
 	qemu-system-x86_64 -m 4G\
 		-drive if=pflash,format=raw,readonly,file=/usr/share/OVMF/OVMF_CODE.fd \
 		-drive if=pflash,format=raw,file=/usr/share/OVMF/OVMF_VARS.fd \
-		-drive if=ide,index=0,media=disk,format=raw,file=fat:rw:fs
+		-drive if=ide,index=0,media=disk,format=raw,file=fat:rw:fs \
+		-netdev user,id=n1,hostfwd=udp::10007-:7,hostfwd=tcp::10007-:7 -device e1000,netdev=n1
 
 format:
 	clang-format -i $(SRCS) $(HEADERS)

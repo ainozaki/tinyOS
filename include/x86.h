@@ -21,7 +21,9 @@ struct interrupt_descriptor {
 
 // read/write |address| through i/o instruction.
 unsigned char io_read(unsigned short address);
+unsigned int io_read32(unsigned short address);
 void io_write(unsigned short address, unsigned char value);
+void io_write32(unsigned short address, unsigned int value);
 
 // Initialize GDT(Grobal Desctiptor Table)
 void gdt_init();

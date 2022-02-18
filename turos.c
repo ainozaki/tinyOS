@@ -4,6 +4,7 @@
 #include "hpet.h"
 #include "intr.h"
 #include "kbc.h"
+#include "pci.h"
 #include "pic.h"
 #include "pixel.h"
 #include "print.h"
@@ -131,9 +132,11 @@ void start_kernel(void *_t __attribute__((unused)),
   }
   puts("DONE\r\n");
 
-  puts("EXEC...");
-  exec(open("test"));
-  puts("DONE\r\n");
+  //puts("EXEC...");
+  //exec(open("test"));
+  //puts("DONE\r\n");
+
+  pci_search_and_dump();
 
   while (1) {
     __asm__ volatile("hlt");
