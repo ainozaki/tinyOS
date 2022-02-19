@@ -29,22 +29,13 @@ void start_kernel(void *_t __attribute__((unused)),
   // display character
   puts("HELLO TUROS\r\n");
 
-  puts("INTIALIZE FS... ");
   fs_init(_fs_start);
-  puts("DONE\r\n");
-
-  // Initialize CPU
-  puts("INTIALIZE GDT, INTR, SYSCALL... ");
   gdt_init();
   intr_init();
   init_syscall();
-  puts("DONE\r\n");
-
-  // Initialize IC
-  puts("INITIALIZE PIC AND KBC...");
   pic_init();
   kbc_intr_init();
-  puts("DONE\r\n");
+  nic_init();
 
   // Dump RSDP signature
   puts("DUMP RSDP SIGNATURE: ");
@@ -136,8 +127,11 @@ void start_kernel(void *_t __attribute__((unused)),
   //exec(open("test"));
   //puts("DONE\r\n");
 
-  pci_search_and_dump();
-  dump_bar();
+  dump_nic_ims();
+  set_nic_reg(NIC_REG_IMS, 0xcafecafe);
+  dump_nic_ims();
+  set_nic_reg(NIC_REG_IMC, 0xffffffff);
+  dump_nic_ims();
 
   while (1) {
     __asm__ volatile("hlt");

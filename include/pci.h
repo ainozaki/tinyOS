@@ -16,6 +16,9 @@
 #define PCI_BAR_MASK_PREFETCH 0x00000008
 #define PCI_BAR_MASK_MEMTYPE 0x00000006
 
+// REG
+#define NIC_REG_IMS 0x00d0
+#define NIC_REG_IMC 0x00d8
 
 union pci_config_address {
   unsigned int raw;
@@ -29,12 +32,19 @@ union pci_config_address {
   };
 };
 
+void nic_init();
+
 unsigned int get_pci_conf(unsigned char bus,
                           unsigned char dev,
                           unsigned char func,
                           unsigned char reg);
 void pci_search_and_dump();
 
-void dump_bar();
+void get_nic_bar();
 
+
+unsigned int get_nic_reg(unsigned short reg);
+void set_nic_reg(unsigned short reg, unsigned int value);
+
+void dump_nic_ims();
 #endif// PCI_H_

@@ -7,7 +7,13 @@ unsigned char nic_bus;
 unsigned char nic_dev;
 unsigned char nic_func;
 
-unsigned int bar_32;
+unsigned int nic_reg_base;
+
+void nic_init() {
+  pci_search_and_dump();
+
+  get_nic_bar();
+}
 
 unsigned int get_pci_conf(unsigned char bus,
                           unsigned char dev,
@@ -78,7 +84,7 @@ void pci_search_and_dump() {
   }
 }
 
-void dump_bar() {
+void get_nic_bar() {
   unsigned int bar = get_pci_conf(nic_bus, nic_dev, nic_func, PCI_CONF_BAR);
   puts("BAR: ");
   puth(bar, 8);
@@ -90,8 +96,8 @@ void dump_bar() {
     switch (bar & PCI_BAR_MASK_MEMTYPE) {
       case PCI_BAR_MASK_32:
         puts("MEM BASE IS 32BIT: ");
-        bar_32 = bar & 0xfffffff0;
-        puth(bar_32, 8);
+        nic_reg_base = bar & 0xfffffff0;
+        puth(nic_reg_base, 8);
         puts("\r\n");
         break;
       case PCI_BAR_MASK_1MB:
@@ -104,4 +110,21 @@ void dump_bar() {
         break;
     }
   }
+}
+
+unsigned int get_nic_reg(unsigned short reg) {
+  unsigned long long addr = nic_reg_base + reg;
+  return *(volatile unsigned int *) addr;
+}
+
+void set_nic_reg(unsigned short reg, unsigned int value) {
+  unsigned long long addr = nic_reg_base + reg;
+  *(volatile unsigned int *) addr = value;
+}
+
+void dump_nic_ims() {
+  unsigned int ims = get_nic_reg(NIC_REG_IMS);
+  puts("IMS: ");
+  puth(ims, 8);
+  puts("\r\n");
 }
