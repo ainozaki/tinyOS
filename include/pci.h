@@ -19,6 +19,28 @@
 // REG
 #define NIC_REG_IMS 0x00d0
 #define NIC_REG_IMC 0x00d8
+#define NIC_REG_RCTL 0x0100
+#define NIC_REG_RDBAL 0x2800
+#define NIC_REG_RDBAH 0x2804
+#define NIC_REG_RDLEN 0x2808
+#define NIC_REG_RDH 0x2810
+#define NIC_REG_RDT 0x2818
+
+// Rxdesc
+#define RXDESC_NUM 80
+#define ALIGN_MARGIN 16
+
+#define PACKET_BUFFER_SIZE 1024
+#define PACKET_RBSIZE_BIT (0b01 << 16)
+
+// RCTL
+#define NIC_RCTL_EN (1U << 1)
+#define NIC_RCTL_SBP (1U << 2)
+#define NIC_RCTL_UPE (1U << 3)
+#define NIC_RCTL_MPE (1U << 4)
+#define NIC_RCTL_BAM (1U << 15)
+
+#define NIC_RDESC_STAT_DD (1U << 0)
 
 union pci_config_address {
   unsigned int raw;
@@ -32,7 +54,18 @@ union pci_config_address {
   };
 };
 
+struct __attribute__((packed)) rxdesc {
+  unsigned long long buffer_addr;
+  unsigned short length;
+  unsigned short packet_checksum;
+  unsigned char status;
+  unsigned char errors;
+  unsigned short special;
+};
+
 void nic_init();
+
+void rx_init();
 
 unsigned int get_pci_conf(unsigned char bus,
                           unsigned char dev,
@@ -47,4 +80,7 @@ unsigned int get_nic_reg(unsigned short reg);
 void set_nic_reg(unsigned short reg, unsigned int value);
 
 void dump_nic_ims();
+
+unsigned short dump_frame();
+
 #endif// PCI_H_

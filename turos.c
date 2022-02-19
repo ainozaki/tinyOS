@@ -134,6 +134,12 @@ void start_kernel(void *_t __attribute__((unused)),
   dump_nic_ims();
 
   while (1) {
+    if (dump_frame() > 0) {
+      puts("\r\n");
+    }
+  }
+
+  while (1) {
     __asm__ volatile("hlt");
   }
 }

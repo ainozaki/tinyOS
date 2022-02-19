@@ -1,5 +1,6 @@
 #include "pci.h"
 
+#include "common.h"
 #include "print.h"
 #include "x86.h"
 
@@ -7,12 +8,22 @@ unsigned char nic_bus;
 unsigned char nic_dev;
 unsigned char nic_func;
 
+// Buffer for Ethernet frame
+static unsigned char rx_buffer[RXDESC_NUM][PACKET_BUFFER_SIZE];
+// Buffer for rxdesc
+static unsigned char
+        rxdesc_data[(sizeof(struct rxdesc) * RXDESC_NUM) + ALIGN_MARGIN];
+static struct rxdesc *rxdesc_base;
+static unsigned short current_rx_idx;
+
 unsigned int nic_reg_base;
 
 void nic_init() {
   pci_search_and_dump();
 
   get_nic_bar();
+
+  rx_init();
 }
 
 unsigned int get_pci_conf(unsigned char bus,
@@ -127,4 +138,74 @@ void dump_nic_ims() {
   puts("IMS: ");
   puth(ims, 8);
   puts("\r\n");
+}
+
+void rx_init() {
+  // rxdesc base addr should be 16byte align
+  unsigned long long rxdesc_addr = (unsigned long long) rxdesc_data;
+  rxdesc_addr = (rxdesc_addr + ALIGN_MARGIN) & 0xfffffffffffffff0;
+  rxdesc_base = (struct rxdesc *) rxdesc_addr;
+
+  // Initialize rxdesc
+  struct rxdesc *current_rxdesc = rxdesc_base;
+  int i;
+  for (i = 0; i < RXDESC_NUM; i++) {
+    current_rxdesc->buffer_addr = (unsigned long long) rx_buffer[i];
+    current_rxdesc->status = 0;
+    current_rxdesc->errors = 0;
+    current_rxdesc++;
+  }
+
+  // Register rxdesc info to NIC reg
+  set_nic_reg(NIC_REG_RDBAH, rxdesc_addr >> 32);
+  set_nic_reg(NIC_REG_RDBAL, rxdesc_addr & 0x00000000ffffffff);
+  set_nic_reg(NIC_REG_RDLEN, sizeof(struct rxdesc) * RXDESC_NUM);
+
+  // Set rxdesc Head and Tail
+  current_rx_idx = 0;
+  set_nic_reg(NIC_REG_RDH, current_rx_idx);
+  set_nic_reg(NIC_REG_RDT, RXDESC_NUM - 1);
+
+  // Rx setting
+  set_nic_reg(NIC_REG_RCTL, PACKET_RBSIZE_BIT | NIC_RCTL_BAM | NIC_RCTL_MPE |
+                                    NIC_RCTL_UPE | NIC_RCTL_SBP | NIC_RCTL_EN);
+}
+
+unsigned short receive_frame(void *buf) {
+  unsigned short len = 0;
+  struct rxdesc *cur_rxdesc = rxdesc_base + current_rx_idx;
+
+  if (cur_rxdesc->status & NIC_RDESC_STAT_DD) {
+    len = cur_rxdesc->length;
+    memcpy(buf, (void *) cur_rxdesc->buffer_addr, cur_rxdesc->length);
+
+    cur_rxdesc->status = 0;
+
+    set_nic_reg(NIC_REG_RDT, current_rx_idx);
+
+    current_rx_idx = (current_rx_idx + 1) % RXDESC_NUM;
+  }
+
+  return len;
+}
+
+unsigned short dump_frame() {
+  unsigned char buf[PACKET_BUFFER_SIZE];
+  unsigned short len;
+  len = receive_frame(buf);
+
+  unsigned short i;
+  for (i = 0; i < len; i++) {
+    puth_without_0x(buf[i], 2);
+
+    if (((i + 1) % 16) == 0) {
+      puts("\r\n");
+    } else if (((i + 1) % 2) == 0) {
+      puts(" ");
+    }
+  }
+  if (len > 0) {
+    puts("\r\n");
+  }
+  return len;
 }
